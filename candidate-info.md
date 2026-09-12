@@ -1,6 +1,6 @@
 # Candidate Information
 
-**Name:** Jag Mohan Singh
+**Name:** Jagmohan Singh
 **Role:** Data Engineer
 **Primary Technology Stack:** Python / PySpark, SQL, Databricks
 **Primary AI Tool Used:** Cursor
