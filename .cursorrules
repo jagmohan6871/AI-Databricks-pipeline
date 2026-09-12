@@ -1,0 +1,30 @@
+# Databricks Medallion Pipeline — Cursor Rules
+
+You are helping build a Databricks e-commerce medallion pipeline (Bronze → Silver → Gold → Dashboard).
+
+## Project constraints
+- Follow the required repository structure. Do not invent a new layout.
+- Prefer Python, PySpark, and Spark SQL. Do not add libraries unless necessary.
+- Sample data must remain deterministic (fixed seed) and include the documented intentional quality issues.
+- Bronze is raw ingest only: no cleaning, no dropping rows, no business transformations.
+- Silver flags bad rows; it does not delete them. Add check columns and `quality_check_result`.
+- Gold aggregations use Silver rows that passed quality checks.
+- Never include secrets, real customer PII, tokens, or production credentials.
+- Keep comments and names consistent with existing files.
+
+## Quality checks (Silver)
+1. Completeness
+2. Uniqueness
+3. Type validation
+4. Referential integrity
+5. Business logic (additional)
+
+## Gold outputs
+1. Sales by product
+2. Revenue by customer
+3. Daily / weekly trends
+4. Customer segmentation
+
+## Documentation
+When generating or changing code, update the matching design/prompt notes if behavior changes.
+Do not fabricate prompt history. Record real prompts, evaluations, accepts, and rejects.
