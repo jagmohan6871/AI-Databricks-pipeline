@@ -20,9 +20,20 @@ def get_spark(app_name: str = "medallion-pipeline") -> SparkSession:
     )
 
 
+def current_catalog(spark: SparkSession) -> str:
+    import os
+
+    override = os.environ.get("MEDALLION_CATALOG")
+    if override:
+        return override
+    return spark.sql("SELECT current_catalog()").collect()[0][0]
+
+
 def ensure_database(spark: SparkSession, database: str) -> None:
-    spark.sql(f"CREATE DATABASE IF NOT EXISTS {database}")
-    spark.sql(f"USE {database}")
+    catalog = current_catalog(spark)
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.{database}")
+    spark.sql(f"USE CATALOG {catalog}")
+    spark.sql(f"USE SCHEMA {database}")
 
 
 def utc_now_col():

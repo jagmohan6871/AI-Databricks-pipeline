@@ -10,7 +10,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.common.config import DATABASE
-from src.gold.sql_loader import parse_gold_statements
+from src.gold.sql_loader import parse_ctas_statement, parse_gold_statements, qualify_table_ref
 
 SQL_DIR = Path(__file__).resolve().parent
 SQL_FILES = [
@@ -19,29 +19,48 @@ SQL_FILES = [
     "03_daily_weekly_trends.sql",
     "04_customer_segmentation.sql",
 ]
+GOLD_TABLES = [
+    "gold_sales_by_product",
+    "gold_revenue_by_customer",
+    "gold_daily_trends",
+    "gold_weekly_trends",
+    "gold_customer_segmentation",
+]
 
 
 def create_gold_tables() -> None:
-    from src.common.spark_utils import ensure_database, get_spark
+    from src.common.spark_utils import (
+        current_catalog,
+        ensure_database,
+        get_spark,
+        write_delta_overwrite,
+    )
 
     spark = get_spark("gold-aggregations")
     ensure_database(spark, DATABASE)
+    catalog = current_catalog(spark)
+
     for name in SQL_FILES:
         path = SQL_DIR / name
         sql_text = path.read_text(encoding="utf-8")
-        for stmt in parse_gold_statements(sql_text, DATABASE):
-            spark.sql(stmt)
-        print(f"Applied {name}")
+        statements = parse_gold_statements(sql_text, DATABASE)
+        if not statements:
+            raise RuntimeError(
+                f"No SQL parsed from {name}. Pull latest repo (sql_loader.py fix) and retry."
+            )
+        for stmt in statements:
+            table_ref, select_sql = parse_ctas_statement(stmt)
+            full_name = qualify_table_ref(table_ref, catalog, DATABASE)
+            result = spark.sql(select_sql)
+            write_delta_overwrite(result, full_name)
+            print(f"  wrote {full_name}")
+        print(f"Applied {name} ({len(statements)} statement(s))")
+
     print("Gold tables:")
-    for table in [
-        "gold_sales_by_product",
-        "gold_revenue_by_customer",
-        "gold_daily_trends",
-        "gold_weekly_trends",
-        "gold_customer_segmentation",
-    ]:
-        n = spark.table(f"{DATABASE}.{table}").count()
-        print(f"  {table}: {n} rows")
+    for table in GOLD_TABLES:
+        full_name = qualify_table_ref(table, catalog, DATABASE)
+        n = spark.table(full_name).count()
+        print(f"  {full_name}: {n} rows")
 
 
 def main() -> None:

@@ -59,6 +59,14 @@
 
 **Fix:** Remove the `not startswith("--")` filter on semicolon splits; comment lines are already stripped inside each chunk.
 
+## Incident 9 — Gold CTAS via `spark.sql` on Free Edition UC
+
+**Symptom:** After the parser fix, logs still show `Applied ...` but `gold_sales_by_product` is missing.
+
+**Root cause:** On Free Edition Unity Catalog, `CREATE OR REPLACE TABLE ... USING DELTA AS` via `spark.sql` may not register tables where `saveAsTable` does (same path Bronze/Silver use). The runner also printed `Applied` even when zero statements parsed.
+
+**Fix:** Gold now parses each CTAS `SELECT`, then writes with `write_delta_overwrite` (three-part `catalog.schema.table` names). Fails loudly if a SQL file parses zero statements.
+
 ## What was not executed here
 
 Full Spark/Delta overwrite and the Databricks SQL dashboard **must be executed on Databricks**. Local evidence is CSV tests (15 passed) plus static review of SQL/Python. Record warehouse query results and dashboard screenshots in this file after the CE run.
