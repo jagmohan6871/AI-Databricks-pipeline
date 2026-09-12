@@ -39,10 +39,14 @@ This guide is written for Databricks Community Edition SQL. Exact menu labels va
 
 ## Evidence for submission
 
+Published workspace dashboard: **Ecommerce Medallion — Sales**.
+
+Screenshot in-repo: `src/dashboard/screenshots/ecommerce-medallion-sales.png` (2026-09-12).
+
 After the dashboard renders:
 
 1. Export or screenshot the three required tiles.
-2. Note the screenshot path or “created in workspace UI” in `debugging-notes.md` / reflection.
+2. Note the screenshot path in `debugging-notes.md` / reflection.
 3. If CE cannot persist dashboards, keep the SQL files and a screenshot of query results as the fallback and say so honestly in `reflection.md`.
 
 ## Histogram fallback SQL

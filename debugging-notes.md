@@ -133,7 +133,22 @@ Pipeline complete.
 
 **Read of the Gold counts:** `gold_revenue_by_customer` = 9,940 = 10,010 Silver customers minus 50 completeness failures minus 20 uniqueness failures (those sets do not overlap). Product sales has 500 rows (all products). Segmentation has 4 rows (Inactive / High-Value / Repeat / One-Time).
 
-**Still open:** Databricks SQL dashboard tiles (screenshots) if not already saved. Pipeline Bronze → Silver → Gold is confirmed on the workspace.
+## Databricks SQL dashboard evidence
+
+**When:** 2026-09-12  
+**Workspace UI:** Dashboards → `Ecommerce Medallion — Sales` (published)  
+**Screenshot:** `src/dashboard/screenshots/ecommerce-medallion-sales.png`
+
+Tiles in the published dashboard:
+
+| Tile | Visualization | Source |
+| --- | --- | --- |
+| Top products by revenue | Bar: `product_name` vs `total_revenue` (top 10) | `gold_sales_by_product` |
+| Revenue buckets | Bar: `revenue_bucket` vs `customers` | CASE buckets on `gold_revenue_by_customer` |
+| Customer revenue distribution | Histogram on `total_revenue` | `gold_revenue_by_customer` where `total_orders > 0` |
+| Customer segmentation | Pie: Color = `segment_type`, Angle = `customer_count` | `gold_customer_segmentation` |
+
+**Pie note:** Repeat (~5,468 / 55%) and High-Value (~45%) dominate. One-Time and Inactive appear in the legend but are tiny slices because most valid customers have multiple completed orders in this sample. That matches Gold CASE rules, not a missing-data bug. Global filters were cleared so all four `segment_type` values remain in the color legend.
 
 ## Code review notes
 

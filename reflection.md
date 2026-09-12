@@ -26,7 +26,8 @@ Cursor drafted repository layout, PySpark helpers, quality-check modules, Gold S
 - Hand-traced uniqueness and RI predicates.
 - `pytest` on generated CSVs (15 tests passed locally).
 - Static review of Gold filters (`PASS` + `Completed`) and segmentation CASE order.
-- Remaining validation is a clean Databricks Community Edition run (Spark/Delta/dashboard), which cannot be faked from this laptop without PySpark.
+- Databricks pipeline run `20260912T191900Z_1a52ebe2` (Bronze/Silver/Gold counts in `debugging-notes.md`).
+- Published SQL dashboard `Ecommerce Medallion — Sales`: top-10 bar, revenue histogram, segmentation pie. Screenshot: `src/dashboard/screenshots/ecommerce-medallion-sales.png`.
 
 ## What I would improve next
 

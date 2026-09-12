@@ -23,12 +23,22 @@ FROM medallion_ecommerce.gold_revenue_by_customer
 WHERE total_orders > 0;
 
 -- Tile 3: Customer segmentation (pie)
+-- Color = segment_type, Angle = customer_count
 SELECT
   segment_type,
   customer_count,
   total_revenue,
   avg_revenue
-FROM medallion_ecommerce.gold_customer_segmentation
+FROM workspace.medallion_ecommerce.gold_customer_segmentation
+ORDER BY customer_count DESC;
+
+-- Tile 3b (optional table): makes tiny One-Time / Inactive counts readable
+SELECT
+  segment_type,
+  customer_count,
+  total_revenue,
+  avg_revenue
+FROM workspace.medallion_ecommerce.gold_customer_segmentation
 ORDER BY customer_count DESC;
 
 -- Tile 4 (extra): Daily revenue trend (line)
