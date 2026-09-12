@@ -67,9 +67,73 @@
 
 **Fix:** Gold now parses each CTAS `SELECT`, then writes with `write_delta_overwrite` (three-part `catalog.schema.table` names). Fails loudly if a SQL file parses zero statements.
 
-## What was not executed here
+## Databricks run evidence
 
-Full Spark/Delta overwrite and the Databricks SQL dashboard **must be executed on Databricks**. Local evidence is CSV tests (15 passed) plus static review of SQL/Python. Record warehouse query results and dashboard screenshots in this file after the CE run.
+**When:** 2026-09-12 19:19 UTC  
+**Batch id:** `20260912T191900Z_1a52ebe2`  
+**Command:** `src.run_pipeline.main()` on Databricks (Unity Catalog `workspace.medallion_ecommerce`)
+
+Bronze ingest matched the generated CSVs (nothing dropped):
+
+```text
+Bronze: {
+  "batch_id": "20260912T191900Z_1a52ebe2",
+  "customers": 10010,
+  "orders": 100020,
+  "products": 500
+}
+```
+
+Silver quality metrics (same batch). Failures match the injected defects: 50 null emails, 20 customer uniqueness rows, 300 order completeness rows, 40 order uniqueness rows, 80 orphan FKs. Type and business-logic checks passed 100%.
+
+```text
+Silver tables written batch_id=20260912T191900Z_1a52ebe2
++----------------+---------------------+------------+-----------+-----------+---------------+-------------------------+--------------------------+
+|table_name      |check_name           |rows_checked|rows_passed|rows_failed|pass_percentage|batch_id                 |computed_at               |
++----------------+---------------------+------------+-----------+-----------+---------------+-------------------------+--------------------------+
+|silver_customers|completeness         |10010       |9960       |50         |99.5005        |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_customers|uniqueness           |10010       |9990       |20         |99.8002        |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_customers|type_validation      |10010       |10010      |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_customers|referential_integrity|10010       |10010      |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_customers|business_logic       |10010       |10010      |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_products |completeness         |500         |500        |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_products |uniqueness           |500         |500        |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_products |type_validation      |500         |500        |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_products |referential_integrity|500         |500        |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_products |business_logic       |500         |500        |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_orders   |completeness         |100020      |99720      |300        |99.7001        |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_orders   |uniqueness           |100020      |99980      |40         |99.96          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_orders   |type_validation      |100020      |100020     |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_orders   |referential_integrity|100020      |99940      |80         |99.92          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
+|silver_orders   |business_logic       |100020      |100020     |0          |100.0          |20260912T191900Z_1a52ebe2|2026-09-12 19:19:59.041041|
++----------------+---------------------+------------+-----------+-----------+---------------+-------------------------+--------------------------+
+```
+
+Gold write log and row counts:
+
+```text
+Silver batch: 20260912T191900Z_1a52ebe2
+  wrote workspace.medallion_ecommerce.gold_sales_by_product
+Applied 01_sales_by_product.sql (1 statement(s))
+  wrote workspace.medallion_ecommerce.gold_revenue_by_customer
+Applied 02_revenue_by_customer.sql (1 statement(s))
+  wrote workspace.medallion_ecommerce.gold_daily_trends
+  wrote workspace.medallion_ecommerce.gold_weekly_trends
+Applied 03_daily_weekly_trends.sql (2 statement(s))
+  wrote workspace.medallion_ecommerce.gold_customer_segmentation
+Applied 04_customer_segmentation.sql (1 statement(s))
+Gold tables:
+  workspace.medallion_ecommerce.gold_sales_by_product: 500 rows
+  workspace.medallion_ecommerce.gold_revenue_by_customer: 9940 rows
+  workspace.medallion_ecommerce.gold_daily_trends: 1351 rows
+  workspace.medallion_ecommerce.gold_weekly_trends: 196 rows
+  workspace.medallion_ecommerce.gold_customer_segmentation: 4 rows
+Pipeline complete.
+```
+
+**Read of the Gold counts:** `gold_revenue_by_customer` = 9,940 = 10,010 Silver customers minus 50 completeness failures minus 20 uniqueness failures (those sets do not overlap). Product sales has 500 rows (all products). Segmentation has 4 rows (Inactive / High-Value / Repeat / One-Time).
+
+**Still open:** Databricks SQL dashboard tiles (screenshots) if not already saved. Pipeline Bronze → Silver → Gold is confirmed on the workspace.
 
 ## Code review notes
 
