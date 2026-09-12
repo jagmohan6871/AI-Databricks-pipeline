@@ -1,0 +1,3 @@
+# Python is only required locally for sample data generation and CSV tests.
+# PySpark/Delta run on Databricks Community Edition.
+pytest>=8.0.0
