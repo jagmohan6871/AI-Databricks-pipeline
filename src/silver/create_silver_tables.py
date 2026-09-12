@@ -14,27 +14,27 @@ from pyspark.sql import functions as F
 
 from src.common.config import AS_OF_DATE, DATABASE, new_batch_id, table_name
 from src.common.spark_utils import ensure_database, get_spark, write_delta_overwrite
-from src.silver.01_quality_completeness import (
+from src.silver.q01_quality_completeness import (
     customers_completeness,
     orders_completeness,
     products_completeness,
 )
-from src.silver.02_quality_uniqueness import (
+from src.silver.q02_quality_uniqueness import (
     customers_uniqueness,
     orders_uniqueness,
     products_uniqueness,
 )
-from src.silver.03_quality_type_validation import (
+from src.silver.q03_quality_type_validation import (
     customers_types,
     orders_types,
     products_types,
 )
-from src.silver.04_quality_referential_integrity import (
+from src.silver.q04_quality_referential_integrity import (
     customers_referential_integrity,
     orders_referential_integrity,
     products_referential_integrity,
 )
-from src.silver.05_quality_business_logic import (
+from src.silver.q05_quality_business_logic import (
     customers_business_logic,
     orders_business_logic,
     products_business_logic,

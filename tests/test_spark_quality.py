@@ -44,7 +44,7 @@ def test_bronze_cast_empty_string_to_null(spark, tmp_path: Path) -> None:
 
 
 def test_uniqueness_flags_both_duplicate_rows(spark) -> None:
-    from src.silver.02_quality_uniqueness import orders_uniqueness
+    from src.silver.q02_quality_uniqueness import orders_uniqueness
 
     df = spark.createDataFrame(
         [(1,), (1,), (2,)],

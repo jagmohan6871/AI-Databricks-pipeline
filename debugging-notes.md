@@ -43,6 +43,14 @@
 
 **Mitigation:** RI uses `select(customer_id).distinct()` (and the same for products).
 
+## Incident 7 — Invalid Python module names (`01_quality_*.py`)
+
+**Symptom:** `SyntaxError: invalid decimal literal` on `create_silver_tables.py` line 17 when importing on Databricks.
+
+**Root cause:** Python cannot import modules whose names start with a digit (`from src.silver.01_quality_completeness import ...`).
+
+**Fix:** Renamed Silver check modules to `q01_quality_completeness.py` … `q05_quality_business_logic.py` and updated imports in `create_silver_tables.py`.
+
 ## What was not executed here
 
 Full Spark/Delta overwrite and the Databricks SQL dashboard **must be executed on Databricks**. Local evidence is CSV tests (15 passed) plus static review of SQL/Python. Record warehouse query results and dashboard screenshots in this file after the CE run.
