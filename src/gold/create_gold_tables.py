@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 import sys
 from pathlib import Path
 
@@ -11,7 +10,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.common.config import DATABASE
-from src.common.spark_utils import ensure_database, get_spark
+from src.gold.sql_loader import parse_gold_statements
 
 SQL_DIR = Path(__file__).resolve().parent
 SQL_FILES = [
@@ -22,25 +21,15 @@ SQL_FILES = [
 ]
 
 
-def _statements(sql_text: str) -> list[str]:
-    text = sql_text.replace("${DATABASE}", DATABASE)
-    parts = [p.strip() for p in re.split(r";\s*", text) if p.strip() and not p.strip().startswith("--")]
-    cleaned = []
-    for part in parts:
-        lines = [ln for ln in part.splitlines() if not ln.strip().startswith("--")]
-        stmt = "\n".join(lines).strip()
-        if stmt:
-            cleaned.append(stmt)
-    return cleaned
-
-
 def create_gold_tables() -> None:
+    from src.common.spark_utils import ensure_database, get_spark
+
     spark = get_spark("gold-aggregations")
     ensure_database(spark, DATABASE)
     for name in SQL_FILES:
         path = SQL_DIR / name
         sql_text = path.read_text(encoding="utf-8")
-        for stmt in _statements(sql_text):
+        for stmt in parse_gold_statements(sql_text, DATABASE):
             spark.sql(stmt)
         print(f"Applied {name}")
     print("Gold tables:")

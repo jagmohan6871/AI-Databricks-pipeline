@@ -51,6 +51,14 @@
 
 **Fix:** Renamed Silver check modules to `q01_quality_completeness.py` … `q05_quality_business_logic.py` and updated imports in `create_silver_tables.py`.
 
+## Incident 8 — Gold SQL skipped when file starts with `--`
+
+**Symptom:** Pipeline prints `Applied 01_sales_by_product.sql` but fails with `TABLE_OR_VIEW_NOT_FOUND` for `gold_sales_by_product`.
+
+**Root cause:** `create_gold_tables._statements()` dropped any SQL chunk whose text started with a header comment (`-- Gold: ...`), so most `CREATE OR REPLACE TABLE` statements never ran.
+
+**Fix:** Remove the `not startswith("--")` filter on semicolon splits; comment lines are already stripped inside each chunk.
+
 ## What was not executed here
 
 Full Spark/Delta overwrite and the Databricks SQL dashboard **must be executed on Databricks**. Local evidence is CSV tests (15 passed) plus static review of SQL/Python. Record warehouse query results and dashboard screenshots in this file after the CE run.
